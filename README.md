@@ -26,6 +26,7 @@ cd $HOME
 ```
 
 # 配置go环境
+```
 cd $HOME
 wget -O go1.18.4.linux-amd64.tar.gz https://golang.org/dl/go1.18.4.linux-amd64.tar.gz
 rm -rf /usr/local/go && tar -C /usr/local -xzf go1.18.4.linux-amd64.tar.gz && rm go1.18.4.linux-amd64.tar.gz
@@ -34,10 +35,11 @@ echo 'export GOPATH=$HOME/go' >> $HOME/.bash_profile
 echo 'export GO111MODULE=on' >> $HOME/.bash_profile
 echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> $HOME/.bash_profile && . $HOME/.bash_profile
 go version
-
+```
 
 
 # 安装gitopia二进制
+```
 cd $HOME 
 rm -rf gitopia
 curl https://get.gitopia.com | bash
@@ -46,28 +48,31 @@ cd gitopia
 make install
 
 gitopiad version --long
-
+```
 # 配置和初始化gitopia
+```
 gitopiad config chain-id $GITOPIA_CHAIN_ID
 gitopiad config keyring-backend test
 gitopiad config node tcp://localhost:${GITOPIA_PORT}657
 
 gitopiad init --chain-id "$GITOPIA_CHAIN_ID" "$MONIKER"
-
+```
 
 # 下载初始文件(genesis)和地址簿
+```
 wget -O $HOME/.gitopia/config/addrbook.json "http://65.108.6.45:8000/gitopia/addrbook.json"
 wget https://server.gitopia.com/raw/gitopia/testnets/master/gitopia-janus-testnet-2/genesis.json.gz
 gunzip genesis.json.gz
 mv genesis.json $HOME/.gitopia/config/genesis.json
-
+```
 # 设置peers和seeds
-
+```
 sed -i.bak -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:${GITOPIA_PORT}658\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:${GITOPIA_PORT}657\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:${GITOPIA_PORT}060\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:${GITOPIA_PORT}656\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":${GITOPIA_PORT}660\"%" $HOME/.gitopia/config/config.toml
 sed -i.bak -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://0.0.0.0:${GITOPIA_PORT}317\"%; s%^address = \":8080\"%address = \":${GITOPIA_PORT}080\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:${GITOPIA_PORT}090\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:${GITOPIA_PORT}091\"%; s%^address = \"0.0.0.0:8545\"%address = \"0.0.0.0:${GITOPIA_PORT}545\"%; s%^ws-address = \"0.0.0.0:8546\"%ws-address = \"0.0.0.0:${GITOPIA_PORT}546\"%" $HOME/.gitopia/config/app.toml
-
+```
 
 # 进行修剪节省磁盘空间
+```
 pruning="custom"
 pruning_keep_recent="100"
 pruning_keep_every="0"
@@ -76,18 +81,22 @@ sed -i -e "s/^pruning *=.*/pruning = \"$pruning\"/" $HOME/.gitopia/config/app.to
 sed -i -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$pruning_keep_recent\"/" $HOME/.gitopia/config/app.toml
 sed -i -e "s/^pruning-keep-every *=.*/pruning-keep-every = \"$pruning_keep_every\"/" $HOME/.gitopia/config/app.toml
 sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"$pruning_interval\"/" $HOME/.gitopia/config/app.toml
-
+```
 # 关闭索引器
+```
 indexer="null"
 sed -i -e "s/^indexer *=.*/indexer = \"$indexer\"/" $HOME/.gitopia/config/config.toml
-
+```
 # 设置汽油费
+```
 sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0utlore\"/" $HOME/.gitopia/config/app.toml
-
+```
 # 启用 prometheus
+```
 sed -i -e "s/prometheus = false/prometheus = true/" $HOME/.gitopia/config/config.toml
-
+```
 # 创建服务文件
+```
 sudo tee /etc/systemd/system/gitopiad.service > /dev/null <<EOF
 [Unit]
 Description=gitopia
@@ -101,24 +110,31 @@ LimitNOFILE=65535
 [Install]
 WantedBy=multi-user.target
 EOF
+```
 
 
 # 启动服务，等待同步高度与浏览器高度一致
+```
+
 sudo systemctl daemon-reload
 sudo systemctl enable gitopiad
 sudo systemctl restart gitopiad
 sudo journalctl -u gitopiad -f -o cat
 
 gitopiad status 2>&1 | jq .SyncInfo  #待输出为false后可以创建验证器
+```
 
 创建钱包
+```
 gitopiad keys add 钱包名称   #创建钱包
 gitopiad keys add TRanbo --recover  #恢复钱包
 gitopiad keys list  #查看钱包地址
+```
 
-水龙头地址：
+水龙头地址：http://gitopia.com/home
 
 # 创建验证器
+```
 gitopiad tx staking create-validator \
   --amount 1000000utlore \
   --from TRanbo \
@@ -129,6 +145,9 @@ gitopiad tx staking create-validator \
   --pubkey  $(gitopiad tendermint show-validator) \
   --moniker Ranbo \
   --chain-id gitopia-janus-testnet-2
+```
   
   # 质押
+```
   gitopiad tx staking delegate 验证器地址 10000000utlore --from=TRanbo --chain-id=gitopia-janus-testnet-2 --gas=auto
+```
