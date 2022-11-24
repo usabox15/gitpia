@@ -4,12 +4,14 @@
 官方Telegram: https://t.me/Gitopia
 
 # 环境及初始化：
+```
 apt install screen
 apt update && sudo apt upgrade -y
 apt install curl build-essential git wget jq make gcc tmux chrony -y
-
+```
 
 # 配置节点名称、链ID、端口变量、钱包名称
+```
 NODENAME=Ranbo
 GITOPIA_PORT=38
 wallet=TRanbo
@@ -21,6 +23,7 @@ echo "export GITOPIA_PORT=${GITOPIA_PORT}" >> $HOME/.bash_profile
 
 cd $HOME
 . .bash_profile
+```
 
 # 配置go环境
 cd $HOME
